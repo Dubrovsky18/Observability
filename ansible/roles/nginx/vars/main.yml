@@ -1,0 +1,6 @@
+nginx_vts_exporter_version: "0.10.8"
+nginx_vts_exporter_binary_url: "https://github.com/sysulq/nginx-vts-exporter/releases/download/v0.10.8/nginx-vtx-exporter_0.10.8_linux_amd64.tar.gz"
+nginx_vts_exporter_service_name: "nginx-vts-exporter"
+nginx_vts_module_version: "0.2.2"
+nginx_vts_module_url: "https://github.com/vozlt/nginx-module-vts/archive/refs/tags/v{{ nginx_vts_module_version }}.tar.gz"
+nginx_version: 1.25.0 

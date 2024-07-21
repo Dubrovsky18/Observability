@@ -1,0 +1,13 @@
+---
+filebeat_version: "8.14.3"
+elastic_version: "8.14.3"
+elk_port: 9200
+elk_host: "{{ hostvars['elk']['local_ip'] }}"
+elk_host_port: "{{ elk_host }}:{{ elk_port }}"
+kibana_port: 5601
+kibana_host: "{{ hostvars['elk']['local_ip'] }}"
+kibana_host_port: "{{ kibana_host }}:{{ kibana_port }}"  
+
+logstash_host: "{{ hostvars['elk']['local_ip'] }}"
+logstash_port: 5044
+elk_password: "changeme"

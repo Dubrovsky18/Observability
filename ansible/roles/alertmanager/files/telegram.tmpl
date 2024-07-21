@@ -1,0 +1,20 @@
+{{ define "telegram.alert_s.message" }}
+{{ if gt (len .Alerts) 0 }}{{ if lt (len .Alerts) 10 }}{{ if gt (len .Alerts.Firing) 0 }}
+<b>{{ len .Alerts.Firing }} alert(s) FIRING</b>
+{{ range .Alerts.Firing }}🔥{{ template "telegram_alert_signal" .}}
+{{ end }}{{ end }}
+{{ if gt (len .Alerts.Resolved) 0 }}
+<b>{{ len .Alerts.Resolved }} alert(s) RESOLVED</b>
+{{ range .Alerts.Resolved }}✅{{ template "telegram_alert_signal" .}}
+{{ end }}{{ end }}
+{{ else }}
+<b>WARNING!</b> - The full alert list cannot be sent.
+🔥<b>{{ len .Alerts.Firing }} alert(s) FIRING</b>
+✅<b>{{ len .Alerts.Resolved }} alert(s) RESOLVED</b>
+{{ end }}{{ end }}
+{{ end }}
+
+{{ define "telegram_alert_signal" }}<b>SUMMARY:</b>{{ .Annotations.summary }}
+сurrent_value: <b> {{ .Annotations.current_value }}</b>
+{{ range .Labels.SortedPairs }}{{ .Name }} = <b>{{ .Value }}</b>
+{{ end }}{{ end }}

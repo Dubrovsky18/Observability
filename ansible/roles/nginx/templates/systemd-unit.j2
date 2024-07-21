@@ -1,0 +1,10 @@
+[Unit]
+Description=Nginx VTS Exporter
+After=network.target
+[Service]
+ExecStart=/usr/local/bin/nginx-vtx-exporter -nginx.scrape_uri=http://127.0.0.1/status/
+Restart=always
+User=nobody
+Group=nogroup
+[Install]
+WantedBy=multi-user.target

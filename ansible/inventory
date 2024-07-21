@@ -1,0 +1,9 @@
+[web]
+nginx1 ansible_host=62.84.126.204 local_ip=10.250.240.15
+nginx2 ansible_host=51.250.78.182 local_ip=10.250.240.29
+
+[mon]
+mon ansible_host=158.160.115.46 local_ip=10.250.240.35
+
+[elk]
+elk ansible_host=89.169.137.163 local_ip=10.250.240.10

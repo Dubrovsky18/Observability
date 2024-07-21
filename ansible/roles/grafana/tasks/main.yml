@@ -1,0 +1,111 @@
+# - name: One way to avoid apt_key once it is removed from your distro, armored keys should use .asc extension, binary should use .gpg
+#   block:
+#     - name: somerepo | no apt key
+#       ansible.builtin.get_url:
+#         url:  https://apt.grafana.com/gpg.key
+#         dest: /etc/apt/keyrings/grafana.gpg
+
+#     - name: somerepo | apt source
+#       ansible.builtin.apt_repository:
+#         repo: "deb [signed-by=/etc/apt/keyrings/grafana.gpg] https://apt.grafana.com stable main"
+#         state: present
+#         filename: /etc/apt/sources.list.d/grafana.list
+
+# - name: Install grafana
+#   unarchive:
+#     src: "https://github.com/grafana/grafana/archive/refs/tags/v{{ version }}.tar.gz"
+#     dest: /tmp/
+#     remote_src: yes
+
+
+- name: Download Grafana DEB package ({{ package_url }})
+  become: true
+  get_url:
+    url: "{{ package_url }}"
+    dest: "/tmp/{{ package_url | urlsplit('path') | basename }}"
+    owner: "{{userId}}"
+    group: "{{groupId}}"
+    mode: '0775'
+  register: package_tmp
+  tags:
+    - install-grafana
+
+
+- name: Install Grafana deb package
+  become: true
+  apt:
+    deb: "{{ package_tmp.dest }}"
+    state: present
+    update_cache: true
+  tags:
+    - install-grafana
+
+# - name: mkdir a directory for grafana
+#   ansible.builtin.file:
+#     path: /etc/grafana
+#     state: directory
+#     recurse: yes
+#     owner: "{{userId}}"
+#     group: "{{groupId}}"
+#     mode: 0755
+
+
+# - name: Create directories for Grafana
+#   file:
+#     path: "{{ item }}"
+#     state: directory
+#     owner: "{{userId}}"
+#     group: "{{groupId}}"
+#     mode: '0755'
+#   loop:
+#     - /etc/grafana
+#     - /var/run/grafana
+#     - /var/log/grafana
+#     - /var/lib/grafana
+#     - /var/lib/grafana/plugins
+#     - /etc/grafana/provisioning
+
+
+# - name: Copy grafana file to systemd
+#   copy:
+#     src: /tmp/grafana-{{ version }}/packaging/deb/systemd/grafana-server.service
+#     dest: /etc/systemd/system/
+#     remote_src: yes
+#   notify: systemd_reload
+
+# - name: Copy grafana env to default 
+#   copy:
+#     src: "/tmp/grafana-{{ version }}/packaging/deb/default/grafana-server"
+#     dest: "/etc/default"
+#     owner: "{{userId}}"
+#     group: "{{groupId}}"
+#     remote_src: yes
+#     mode: 0755
+
+# - name: Copy grafana config to etc
+#   copy:
+#     src: "/tmp/grafana-{{ version }}/packaging/deb/init.d/grafana-server"
+#     dest: "/etc/init.d/grafana-server"
+#     owner: "{{userId}}"
+#     group: "{{groupId}}"
+#     remote_src: yes
+#     mode: 0755
+
+
+- name: "Grafana configuration file copy"
+  template:
+    src: "grafana.conf.j2"
+    dest: /etc/grafana/grafana.ini
+  notify: event_restart_grafana
+
+- name: "Grafana server started"
+  ansible.builtin.systemd:
+    name: grafana-server
+    enabled: true
+    state: restarted
+
+# - name: "Check if Grafana is accessible."
+#   uri:
+#     url: http://127.0.0.1:3000
+#     method: GET
+#     status_code: 200

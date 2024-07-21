@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  filebeat:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: filebeat
+    volumes:
+      - /var/log/filebeat:/var/log/filebeat
+      - /var/log/nginx:/var/log/nginx:ro
+      - /opt/filebeat/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
+    ports:
+      - "5066:5066"
+    networks:
+      - elastic
+
+networks:
+  elastic:
+    driver: bridge

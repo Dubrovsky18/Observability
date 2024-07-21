@@ -1,0 +1,36 @@
+version: '3.7'
+
+services:
+  metricbeat:
+    build:
+      context: ./
+      args:
+        ELASTIC_VERSION: 8.14.3
+    user: root
+    command:
+      # Log to stderr.
+      - -e
+      - --strict.perms=false
+      - --system.hostfs=/hostfs
+    volumes:
+      - ./metricbeat/config/:/usr/share/metricbeat/:ro,Z
+      - type: bind
+        source: /
+        target: /hostfs
+        read_only: true
+      - type: bind
+        source: /sys/fs/cgroup
+        target: /hostfs/sys/fs/cgroup
+        read_only: true
+      - type: bind
+        source: /proc
+        target: /hostfs/proc
+        read_only: true
+      - type: bind
+        source: /var/run/docker.sock
+        target: /var/run/docker.sock
+        read_only: true
+    environment:
+      METRICBEAT_INTERNAL_PASSWORD: ${METRICBEAT_INTERNAL_PASSWORD:-}
+      MONITORING_INTERNAL_PASSWORD: ${MONITORING_INTERNAL_PASSWORD:-}
+      BEATS_SYSTEM_PASSWORD: ${BEATS_SYSTEM_PASSWORD:-}

@@ -1,0 +1,14 @@
+groups:
+  - name: alerts
+    rules:
+      - alert: InstanceDown
+        expr: up == 0
+        for: 1m
+        labels:
+          category: infrastructure
+          severity: critical
+          env: production
+        annotations:
+          summary: "Instance {% raw %}{{ $labels.instance }}{% endraw %} is down"
+          description: "{% raw %}{{ $labels.instance }}{% endraw %} of job {% raw %}{{ $labels.job }}{% endraw %} has been down for more than 1 minutes."
+          current_value: "{% raw %}{{ $value }}{% endraw %}"

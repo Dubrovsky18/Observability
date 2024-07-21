@@ -1,0 +1,47 @@
+---
+- name: Check if Docker is installed
+  stat:
+    path: /usr/bin/docker
+  register: docker_installed
+
+- name: Ensure Docker is installed
+  shell: "curl -fsSL https://get.docker.com | sh"
+  when: docker_installed.stat.exists == false
+
+- name: Ensure Docker is started and enabled
+  systemd:
+    name: docker
+    state: started
+    enabled: yes
+
+- name: Create application directories
+  file:
+    path: "{{ item }}"
+    state: directory
+  with_items:
+    - /opt/filebeat
+
+- name: Copy Dockerfile and config for Filebeat
+  template:
+    src: Dockerfile
+    dest: /opt/filebeat/Dockerfile
+  tags: filebeat
+
+- name: Copy Docker-compose
+  template:
+    src: docker-compose.yml
+    dest: /opt/filebeat/docker-compose.yml
+  tags: filebeat
+
+- name: Copy filebeat configuration
+  template:
+    src: filebeat.yml.j2
+    dest: /opt/filebeat/filebeat.yml
+  tags: filebeat
+
+
+- name: Setup Filebeat with Docker 
+  command: docker compose up -d --build
+  args:
+    chdir: /opt/filebeat
+  tags: filebeat

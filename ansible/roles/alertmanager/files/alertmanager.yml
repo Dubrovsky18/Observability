@@ -1,0 +1,26 @@
+global:
+  resolve_timeout: 1m
+
+route:
+  receiver: 'default'
+  group_by: [alertname, prod]
+  routes:
+    - receiver: critical
+      continue: true
+      match_re:
+        severity: critical|disaster
+        category: application|infrastructure
+
+receivers:
+  - name: 'default'
+  - name: 'critical'
+    telegram_configs:
+    - bot_token: '7481506785:AAHLWlyVcq-WoeidLNfIW6eIVijZZBEKCgM'
+      chat_id: -4254994539
+      send_resolved: true
+      api_url: 'https://api.telegram.org'
+      parse_mode: 'HTML'
+      message: '{{ '{{ template "telegram.alert_s.message" . }}' }}'
+
+templates:
+  - '/etc/alertmanager/template/telegram.tmpl'

@@ -1,0 +1,29 @@
+---
+- name: Install Alertmanager, Prometheus and Grafana
+  hosts: mon
+  become: yes
+  become_method: sudo
+  roles:
+    - prometheus
+    - alertmanager
+    - grafana
+  tags: mon
+
+- name: Install elasticsearch
+  hosts: elk
+  become: yes
+  become_method: sudo
+  roles:
+    - elasticsearch
+  tags: elk
+
+- name: Install nginx and Node_Exporter
+  hosts: web
+  become: yes
+  become_method: sudo
+  roles:
+    - nginx
+    - prometheus_node_exporter
+    - filebeat
+  tags: web
+

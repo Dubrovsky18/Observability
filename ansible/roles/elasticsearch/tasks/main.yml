@@ -1,0 +1,144 @@
+---
+- name: Ensure Docker is installed
+  shell: "curl https://get.docker.com | sh"
+
+- name: Ensure Docker is started and enabled
+  systemd:
+    name: docker
+    state: started
+    enabled: yes
+
+- name: Create application directories
+  file:
+    path: "{{ item }}"
+    state: directory
+  with_items:
+    - /opt/elastic_stack/elasticsearch/config
+    - /opt/elastic_stack/kibana/config
+    - /opt/elastic_stack/logstash/config
+    - /opt/elastic_stack/logstash/pipeline
+    - /opt/elastic_stack/setup/roles
+    - /opt/elastic_stack/metricbeat/config
+    # - /opt/elastic_stack/es-monitor/bin
+    # - /opt/elastic_stack/es-monitor/Grafana
+
+- name: Copy Dockerfile and config for Elasticsearch
+  template:
+    src: elasticsearch/Dockerfile
+    dest: /opt/elastic_stack/elasticsearch/Dockerfile
+
+- name: Copy Elasticsearch configuration
+  template:
+    src: elasticsearch/config/elasticsearch.yml
+    dest: /opt/elastic_stack/elasticsearch/config/elasticsearch.yml
+
+- name: Copy Dockerfile and config for Kibana
+  template:
+    src: kibana/Dockerfile
+    dest: /opt/elastic_stack/kibana/Dockerfile
+
+- name: Copy Kibana configuration
+  template:
+    src: kibana/config/kibana.yml
+    dest: /opt/elastic_stack/kibana/config/kibana.yml
+
+- name: Copy Dockerfile and config for Logstash
+  template:
+    src: logstash/Dockerfile
+    dest: /opt/elastic_stack/logstash/Dockerfile
+
+- name: Copy Logstash configuration
+  template:
+    src: logstash/config/logstash.yml
+    dest: /opt/elastic_stack/logstash/config/logstash.yml
+
+- name: Copy Logstash pipeline configuration
+  template:
+    src: logstash/pipeline/logstash.conf
+    dest: /opt/elastic_stack/logstash/pipeline/logstash.conf
+
+- name: Copy env file
+  template:
+    src: env
+    dest: /opt/elastic_stack/.env
+
+- name: Copy setup Dockerfile
+  template:
+    src: setup/Dockerfile
+    dest: /opt/elastic_stack/setup/Dockerfile
+
+- name: Copy setup entrypoint
+  template:
+    src: setup/entrypoint.sh
+    dest: /opt/elastic_stack/setup/entrypoint.sh
+    mode: '0755'
+
+- name: Copy setup lib
+  template:
+    src: setup/lib.sh
+    dest: /opt/elastic_stack/setup/lib.sh
+
+- name: Copy role filebeat_role files
+  template:
+    src: setup/roles/filebeat_writer.json
+    dest: /opt/elastic_stack/setup/roles/filebeate_writer.json
+
+- name: Copy ROLE Heartbeat_writer
+  template:
+    src: setup/roles/heartbeat_writer.json
+    dest: /opt/elastic_stack/setup/roles/heartbeat_writer.json
+
+- name: Copy role LOGSTAHS_WRITER
+  template:
+    src: setup/roles/logstash_writer.json
+    dest: /opt/elastic_stack/setup/roles/logstash_writer.json
+
+- name: Copy role metricbeat_writer files
+  template:
+    src: setup/roles/metricbeat_writer.json
+    dest: /opt/elastic_stack/setup/roles/metricbeat_writer.json
+  
+- name: Copy metricbeat Dockerfile
+  template:
+    src: metricbeat/Dockerfile
+    dest: /opt/elastic_stack/metricbeat/Dockerfile
+
+- name: Copy metricbeat Dockerfile
+  template:
+    src: metricbeat/docker-compose.yml
+    dest: /opt/elastic_stack/metricbeat/metricbeat-compose.yml
+  tags:
+    - metrics
+
+- name: Copy metricbeat.yml
+  template:
+    src: metricbeat/config/metricbeat.yml
+    dest: /opt/elastic_stack/metricbeat/config/metricbeat.yml
+  tags:
+    - metrics
+
+- name: Copy Docker Compose file
+  template:
+    src: docker-compose.yml
+    dest: /opt/elastic_stack/docker-compose.yml
+  tags:
+    - metrics
+    - docker-compose-elk
+
+
+- name: Setup Elastic Stack with Docker Compose
+  command: docker compose up setup
+  args:
+    chdir: /opt/elastic_stack
+  tags:
+    - metrics
+    - docker-compose-elk
+
+- name: Start Elastic Stack with Docker Compose
+  command: docker compose -f metricbeat/metricbeat-compose.yml up --build -d
+  args:
+    chdir: /opt/elastic_stack
+  tags:
+    - metrics 
+    - docker-compose-elk
+

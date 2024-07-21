@@ -1,0 +1,2 @@
+ version: 8.14.3
+ elasticsearch_url: https://github.com/elastic/elasticsearch/archive/refs/tags/v{{ version }}.tar.gz
